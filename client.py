@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal, QObject, QThread
 from PySide6.QtGui import QFont, QColor
+import ssl # NUEVO: Importamos el módulo SSL
 
 # --- 1. CLASE PARA MANEJAR LA RECEPCIÓN DE RED CON SIGNALS Y SLOTS ---
 
@@ -67,13 +68,11 @@ class ClienteChat(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         
-        # Layout principal vertical (contenedor de toda la ventana)
         self.main_layout = QVBoxLayout(central_widget)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
-        # --- Header Bar Personalizado ---
-        # El texto inicial será para pedir el nombre
+        # Header Bar Personalizado (Nombre de Usuario)
         self.header_label = QLabel("Ingresa tu nombre para iniciar chat") 
         self.header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.header_label.setFixedHeight(50)
@@ -87,16 +86,14 @@ class ClienteChat(QMainWindow):
             }
         """)
         self.main_layout.addWidget(self.header_label)
-        # -----------------------------------------------------------
 
-        # 1. Área de Chat (Historial) - Scrollable y Expandible
+        # Área de Chat (Historial) - Scrollable y Expandible
         self.chat_area = QWidget()
         self.chat_area_layout = QVBoxLayout(self.chat_area)
         self.chat_area_layout.setAlignment(Qt.AlignmentFlag.AlignTop) 
         self.chat_area_layout.setSpacing(5)
         self.chat_area_layout.setContentsMargins(10, 10, 10, 10)
         
-        # Spacer para asegurar que los mensajes estén siempre arriba
         self.chat_area_layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
 
         self.scroll_area = QScrollArea()
@@ -106,7 +103,7 @@ class ClienteChat(QMainWindow):
         
         self.main_layout.addWidget(self.scroll_area)
 
-        # 2. Área de Entrada de Mensajes
+        # Área de Entrada de Mensajes
         self.input_widget = QWidget()
         self.input_layout = QHBoxLayout(self.input_widget)
         self.input_layout.setContentsMargins(10, 5, 10, 10)
@@ -157,12 +154,22 @@ class ClienteChat(QMainWindow):
         """)
 
     def conectar_servidor(self):
-        """Establece conexión con el servidor."""
+        """Establece conexión con el servidor (usando SSL)."""
         try:
-            self.socket_cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket_cliente.connect((self.host, self.puerto))
+            # 1. Crear el socket TCP sin envolver
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((self.host, self.puerto))
+            
+            # 2. NUEVO: Crear contexto SSL y envolver el socket
+            # Deshabilitamos la verificación de certificado (CERT_NONE) porque usamos uno auto-firmado.
+            contexto_ssl = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            contexto_ssl.check_hostname = False
+            contexto_ssl.verify_mode = ssl.CERT_NONE 
+            
+            self.socket_cliente = contexto_ssl.wrap_socket(sock, server_hostname=self.host)
+            
             self.conectado = True
-            self.mostrar_mensaje_sistema(f"✅ Conectado al servidor {self.host}:{self.puerto}")
+            self.mostrar_mensaje_sistema(f"✅ Conectado al servidor SEGURO (SSL) {self.host}:{self.puerto}")
             return True
         except Exception as e:
             QMessageBox.critical(self, "Error de Conexión", f"❌ No se pudo conectar al servidor: {e}")
@@ -173,11 +180,11 @@ class ClienteChat(QMainWindow):
         label = QLabel(f"--- {mensaje} ---")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        # --- CÓDIGO CORREGIDO: Inicialización correcta de QFont ---
+        # --- CORREGIDO: Inicialización correcta de QFont ---
         font = QFont("Arial", 9)
-        font.setItalic(True) # Se establece la cursiva con el método correcto
+        font.setItalic(True)
         label.setFont(font)
-        # --------------------------------------------------------
+        # ---------------------------------------------------
         
         label.setStyleSheet("color: #666;")
         self.chat_area_layout.addWidget(label)
@@ -262,7 +269,6 @@ class ClienteChat(QMainWindow):
 
     def iniciar_chat(self):
         """Maneja la conexión, NICK y el inicio de hilos."""
-        # Al iniciar, la barra ya dice "Ingresa el nombre de usuario"
         if not self.conectar_servidor():
             return
 
@@ -270,7 +276,6 @@ class ClienteChat(QMainWindow):
             mensaje_servidor = self.socket_cliente.recv(1024).decode('utf-8')
             
             if mensaje_servidor == "NICK":
-                # La ventana de diálogo aparece DESPUÉS de conectar y recibir la solicitud NICK
                 name, ok = QInputDialog.getText(self, "Nombre de Usuario", 
                                                 "Ingresa tu nombre de usuario para el chat:")
 
@@ -281,7 +286,6 @@ class ClienteChat(QMainWindow):
                     
                 self.socket_cliente.send(self.nombre_usuario.encode('utf-8'))
                 
-                # ACTUALIZACIÓN CLAVE: Se actualiza el Header Label con el nombre ingresado
                 self.header_label.setText(f"Chat: {self.nombre_usuario}")
                 self.setWindowTitle(f"SecurePy Chat - {self.nombre_usuario}") 
             else:
