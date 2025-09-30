@@ -13,11 +13,11 @@ source venv/bin/activate
 
 # Actualizar pip
 echo "Actualizando pip..."
-pip install --upgrade pip
+pip3 install --upgrade pip3
 
 # Instalar dependencias
 echo "Instalando dependencias..."
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Generar certificados (con el script corregido)
 echo "Generando certificados SSL..."
