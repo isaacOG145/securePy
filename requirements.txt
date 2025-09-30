@@ -1,0 +1,9 @@
+# Interfaz Gráfica
+PySide6>=6.5.0
+
+# Seguridad SSL
+pyopenssl>=23.2.0
+cryptography>=41.0.0
+
+# Utilidades
+pyyaml>=6.0
