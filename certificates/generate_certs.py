@@ -18,7 +18,7 @@ except ImportError as e:
 def generate_self_signed_cert(cert_dir="certificates"):
     """Genera certificado SSL auto-firmado para desarrollo"""
     
-    print(f"🔧 Iniciando generación de certificados en: {cert_dir}")
+    print(f"Iniciando generación de certificados en: {cert_dir}")
     
     # Crear directorio si no existe (compatible con Windows)
     cert_path = Path(cert_dir)
@@ -29,8 +29,8 @@ def generate_self_signed_cert(cert_dir="certificates"):
     key_file = cert_path / "server.key"
     cert_file = cert_path / "server.crt"
     
-    print(f"🔧 Ruta clave: {key_file}")
-    print(f"🔧 Ruta certificado: {cert_file}")
+    print(f"Ruta clave: {key_file}")
+    print(f"Ruta certificado: {cert_file}")
     
     # Verificar si ya existen
     if key_file.exists() and cert_file.exists():
@@ -45,7 +45,7 @@ def generate_self_signed_cert(cert_dir="certificates"):
         key = crypto.PKey()
         key.generate_key(crypto.TYPE_RSA, 2048)
         
-        print("🔧 Creando certificado...")
+        print("Creando certificado...")
 
         # Crear certificado
         cert = crypto.X509()

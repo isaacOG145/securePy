@@ -410,9 +410,9 @@ class ConsoleChatClient:
         finally:
             self.client.disconnect()
 
-
 # Ejemplo de uso
 if __name__ == "__main__":
+    
     # Cliente de consola simple
     if len(sys.argv) > 1:
         host = sys.argv[1]
@@ -421,5 +421,6 @@ if __name__ == "__main__":
         host = 'localhost'
         port = 9999
     
+    # En Linux usar python3
     client = ConsoleChatClient(host, port)
     client.start()
