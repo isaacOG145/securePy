@@ -1,8 +1,3 @@
-"""
-Servidor modular para Secure Chat
-Maneja conexiones SSL y procesa mensajes usando el protocolo definido
-"""
-
 import socket
 import ssl
 import threading

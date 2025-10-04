@@ -1,8 +1,3 @@
-"""
-Cliente base para Secure Chat
-Proporciona la funcionalidad central de conexión y comunicación
-"""
-
 import socket
 import ssl
 import threading
@@ -11,15 +6,14 @@ import sys
 from typing import Optional, Callable
 from pathlib import Path
 
-# Importamos nuestro protocolo
 try:
-    # Para cuando se ejecuta como módulo
+
     from .protocol import (
         MessageType, CommandType, ChatMessage, SystemMessage,
         ErrorMessage, MessageFactory, ProtocolValidator
     )
 except ImportError:
-    # Para cuando se ejecuta directamente
+    
     from protocol import (
         MessageType, CommandType, ChatMessage, SystemMessage,
         ErrorMessage, MessageFactory, ProtocolValidator
@@ -27,43 +21,30 @@ except ImportError:
 
 
 class SecureChatClient:
-    """
-    Cliente base para conexiones seguras de chat
-    """
     
     def __init__(self, host: str = 'localhost', port: int = 9999,
                  username: str = None):
-        """
-        Inicializa el cliente seguro
-        
-        Args:
-            host: Dirección del servidor
-            port: Puerto del servidor
-            username: Nombre de usuario (opcional)
-        """
+    
         self.host = host
         self.port = port
         self.username = username
         
-        # Estado del cliente
         self.connected = False
         self.authenticated = False
         self.socket: Optional[ssl.SSLSocket] = None
         
-        # Callbacks para eventos
         self.on_message_received: Optional[Callable] = None
         self.on_connection_changed: Optional[Callable] = None
         self.on_error: Optional[Callable] = None
         
-        # Hilo de recepción
         self.receive_thread: Optional[threading.Thread] = None
         
     def initialize_ssl_context(self) -> ssl.SSLContext:
-        """Inicializa y configura el contexto SSL para el cliente"""
+        
         try:
             context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-            context.check_hostname = False  # Para desarrollo con localhost
-            context.verify_mode = ssl.CERT_NONE  # Para certificados auto-firmados
+            context.check_hostname = False  
+            context.verify_mode = ssl.CERT_NONE 
             
             return context
             
@@ -72,39 +53,29 @@ class SecureChatClient:
             raise
     
     def connect(self) -> bool:
-        """
-        Establece conexión segura con el servidor
         
-        Returns:
-            bool: True si la conexión fue exitosa
-        """
         try:
-            # Crear socket base
+            
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             
-            # Configurar SSL
             ssl_context = self.initialize_ssl_context()
             self.socket = ssl_context.wrap_socket(
                 sock, server_hostname=self.host
             )
             
-            # Conectar al servidor
             self.socket.connect((self.host, self.port))
             self.connected = True
             
             print(f"Conectado al servidor seguro {self.host}:{self.port}")
             
-            # Iniciar hilo de recepción
             self.receive_thread = threading.Thread(
                 target=self._receive_messages,
                 daemon=True
             )
             self.receive_thread.start()
             
-            # Notificar cambio de conexión
             self._notify_connection_changed(True)
             
-            # Proceso de autenticación si hay username
             if self.username:
                 return self._authenticate()
             
@@ -115,13 +86,12 @@ class SecureChatClient:
             return False
     
     def _authenticate(self) -> bool:
-        """Realiza el proceso de autenticación con el servidor"""
+        
         try:
             if not self.username:
                 self._handle_error("No se especificó nombre de usuario")
                 return False
             
-            # Crear mensaje de autenticación
             auth_message = MessageFactory.create_auth_message(self.username)
             self.socket.send(auth_message.to_json().encode('utf-8'))
             
@@ -133,16 +103,7 @@ class SecureChatClient:
             return False
     
     def send_message(self, content: str, room: str = "general") -> bool:
-        """
-        Envía un mensaje al servidor
         
-        Args:
-            content: Contenido del mensaje
-            room: Sala de chat (por defecto "general")
-            
-        Returns:
-            bool: True si el mensaje fue enviado exitosamente
-        """
         try:
             if not self.connected or not self.socket:
                 self._handle_error("No conectado al servidor")
@@ -152,10 +113,8 @@ class SecureChatClient:
                 self._handle_error("No autenticado en el servidor")
                 return False
             
-            # Sanitizar contenido
             sanitized_content = ProtocolValidator.sanitize_content(content)
             
-            # Crear y enviar mensaje
             chat_message = MessageFactory.create_chat_message(
                 self.username or "Anónimo",
                 sanitized_content,
@@ -170,16 +129,7 @@ class SecureChatClient:
             return False
     
     def send_command(self, command: CommandType, **params) -> bool:
-        """
-        Envía un comando al servidor
-        
-        Args:
-            command: Tipo de comando
-            **params: Parámetros adicionales del comando
-            
-        Returns:
-            bool: True si el comando fue enviado exitosamente
-        """
+
         try:
             if not self.connected or not self.socket:
                 self._handle_error("No conectado al servidor")
@@ -327,7 +277,6 @@ class SecureChatClient:
         self.on_connection_changed = on_connection_changed
         self.on_error = on_error
 
-
 # Cliente de consola simple para pruebas
 class ConsoleChatClient:
     """Cliente de consola simple para pruebas"""
@@ -350,7 +299,7 @@ class ConsoleChatClient:
     def _on_connection_changed(self, connected: bool):
         """Callback para cambios de conexión"""
         status = "conectado" if connected else "desconectado"
-        print(f"🔌 Estado de conexión: {status}")
+        print(f"Estado de conexión: {status}")
     
     def _on_error(self, error_message: str):
         """Callback para errores"""
