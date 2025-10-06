@@ -1,3 +1,7 @@
+"""
+Generador de 2 llaves para cifrado asimetrico
+"""
+
 #!/usr/bin/env python3
 import sys
 from pathlib import Path
@@ -10,9 +14,6 @@ except ImportError as e:
     sys.exit(1)
 
 def generate_self_signed_cert(cert_dir="certificates"):
-    """Genera certificado SSL auto-firmado para desarrollo"""
-    
-    print(f"Iniciando generación de certificados en: {cert_dir}")
     
     # Crear directorio si no existe (compatible con Windows)
     cert_path = Path(cert_dir)
@@ -56,7 +57,6 @@ def generate_self_signed_cert(cert_dir="certificates"):
         return False
 
 if __name__ == "__main__":
-    print("Ejecutando generador de certificados...")
     success = generate_self_signed_cert()
     if success:
         print("Generación de certificados COMPLETADA")
