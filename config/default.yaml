@@ -1,24 +1,18 @@
-# Configuración del servidor
 server:
   host: "localhost"
   port: 9999
   max_clients: 100
   timeout: 30
 
-# Configuración de seguridad
 security:
-  enabled: true
-  certfile: "certificates/server.crt"
-  keyfile: "certificates/server.key"
-  verify_mode: "CERT_NONE"  # Para desarrollo con certs auto-firmados
+  mode: "symmetric"
+  keyfile: "certificates/symmetric.key"
 
-# Configuración de logging
 logging:
   level: "INFO"
-  file: "logs/secure_chat.log"
+  file: "logs/symmetric_chat.log"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
-# Configuración del cliente
 client:
   auto_reconnect: true
   reconnect_delay: 5

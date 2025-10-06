@@ -29,6 +29,8 @@ call venv\Scripts\activate.bat
 echo Actualizando pip...
 pip install --upgrade pip
 
+pip install cryptography
+
 :: Instalar dependencias
 echo Instalando dependencias...
 pip install -r requirements.txt

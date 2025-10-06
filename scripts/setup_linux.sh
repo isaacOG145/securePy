@@ -19,6 +19,8 @@ pip3 install --upgrade pip3
 echo "Instalando dependencias..."
 pip3 install -r requirements.txt
 
+pip3 install cryptography
+
 # Generar certificados (con el script corregido)
 echo "Generando certificados SSL..."
 python3 certificates/generate_certs.py
