@@ -1,0 +1,15 @@
+venv/
+certificates/server.key
+certificates/server.crt
+*.key
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+logs/
+
+# IDE
+.vscode/
+.idea/
